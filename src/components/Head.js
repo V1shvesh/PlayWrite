@@ -12,14 +12,14 @@ class Node extends Component {
       isTarget: false,
     };
     jsPlumb.ready(() => {
-      jsPlumb.draggable('head', { containment: 'parent' });
-      jsPlumb.addEndpoint('head', sourceEndpoint);
+      jsPlumb.draggable('node-head', { containment: 'parent' });
+      jsPlumb.addEndpoint('node-head', sourceEndpoint);
     });
   }
 
   render() {
     return (
-      <div className="node head" id="head">
+      <div className="node head" id="node-head">
         HEAD
       </div>
     );

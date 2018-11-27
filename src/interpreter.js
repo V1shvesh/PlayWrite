@@ -51,7 +51,7 @@ function getNextNode(a) {
 function getValue(a) {
     if (typeof a == "object") {
         if ("element" in a) {
-            return element;
+            return a.element;
         }
     }
 }
@@ -89,10 +89,10 @@ function parser(statement) {
     statement = statement.replace(/\s/g, "");
     
     // assignment statements
-    if (statement.includes("=") {
+    if (statement.includes("=")) {
         var tokens = statement.split("=");
         if (tokens.length === 2) {
-            if (!objectExists(tokens[0]) {
+            if (!objectExists(tokens[0])) {
                 var code = tokens[0]+"="+getToken(tokens[1]);
                 eval(code);
                 OBJECTS.push(tokens[0]);
@@ -109,6 +109,14 @@ function parser(statement) {
 
 function interpreter() {
     var code = getStatements(getCode());
-    code.foreach(function(statement)) {
+    code.forEach(function(statement) {
+        console.log(statement);
         parser(statement);
-    }
+    });
+}
+
+// RUNS HERE
+interpreter();
+OBJECTS.forEach(function(o) {
+  console.log(o);
+})

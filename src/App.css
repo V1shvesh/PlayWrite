@@ -19,7 +19,11 @@
 }
 
 .write-area {
-  background-color: #ffffff;
+  background-color: #626262;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .taskbar {
@@ -41,12 +45,17 @@
   margin-right: 20px;
 }
 
+.node-addr {
+  height: 2rem;
+  margin: 0 20px 0 40px;
+}
+
 .btn {
   height: 2rem;
   box-sizing: content-box;
   border: none;
   padding: 5px 1.5rem;
-  background: rgba(72, 17, 255, 0.794);
+  background-color: rgba(72, 17, 255, 0.794);
   line-height: 2rem;
   border-radius: 5px;
   font-size: 1.1rem;
@@ -54,7 +63,68 @@
   cursor: pointer;
 }
 
-.btn:hover {
+.btn-create-head,
+.btn-remove-head {
+  margin-left: 30px;
+  background-color: rgba(72, 255, 0, 0.8);
+}
+
+.btn-create-head:disabled {
+  background-color: #777;
+  color: #444;
+}
+
+.btn-create-head:disabled:hover {
+  background-color: #777;
+}
+
+.btn-create-head:hover,
+.btn-create-node:hover {
   background-color: rgba(73, 17, 255, 0.322);
+}
+
+.btn-run-code {
+  width: 8rem;
+  margin-left: auto;
+  margin-right: 17rem;
+}
+
+.mode {
+  margin: 3em;
+}
+
+.btn-play,
+.btn-code {
+  width: 5rem;
+  height: 2.5rem;
+  font-size: 1.2rem;
+}
+
+.btn-play {
+  border-radius: 5px 0 0 5px;
+  background-color: transparent;
+  border: 2px solid #18ecff;
+  color: #18ecff;
+  border-right-width: 0;
+}
+
+.btn-play:disabled,
+.btn-play:hover {
+  background-color: #18ecff;
+  color: #626262;
+}
+
+.btn-code {
+  border-radius: 0 5px 5px 0;
+  background-color: transparent; 
+  border: 2px solid #48ff00;
+  color: #48ff00;
+  border-left-width: 0;
+}
+
+.btn-code:disabled,
+.btn-code:hover {
+  background-color: #48ff00;
+  color: #626262;
 }
 

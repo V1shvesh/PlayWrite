@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import './node.css';
 import { jsPlumb } from 'jsplumb';
 
-// TODO: Modify ID to include Data
 class Node extends Component {
   constructor(props) {
     super(props);
@@ -43,7 +42,7 @@ class Node extends Component {
     return (
       <div className="node" id={`node-${addr}`} style={{ left, top }}>
         <span className="node__data">{data}</span>
-        <span className="node__addr">{`0x${addr.toString(16).padStart(2, '0')}`}</span>
+        <span className="node__addr">{`${addr.toString().padStart(2, '0')}`}</span>
       </div>
     );
   }

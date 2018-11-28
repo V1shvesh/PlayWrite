@@ -184,6 +184,16 @@ class App extends Component {
     });
   }
 
+  resetPlayArea = () => {
+    jsPlumb.reset();
+    this.setState({
+      nodes: [],
+      curValueInput: NaN,
+      curAddrInput: '',
+      head: false,
+    });
+  }
+
   changeMode = () => {
     const { mode } = this.state;
     this.removeHead();

@@ -1,0 +1,7 @@
+head = Head
+a = Node 5
+b = Node 10
+Link head a
+Link a b
+Remove a
+

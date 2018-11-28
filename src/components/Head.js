@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { jsPlumb } from 'jsplumb';
+import PropTypes from 'prop-types';
 
-class Node extends Component {
+class Head extends Component {
   componentDidMount() {
+    const { addEndpoint, makeDraggable } = this.props;
     const sourceEndpoint = {
       anchors: 'Right',
       endpoint: ['Dot', { radius: 8 }],
@@ -11,10 +12,8 @@ class Node extends Component {
       isSource: true,
       isTarget: false,
     };
-    jsPlumb.ready(() => {
-      jsPlumb.draggable('node-head', { containment: 'parent' });
-      jsPlumb.addEndpoint('node-head', sourceEndpoint);
-    });
+    makeDraggable('node-head', { containment: 'parent' });
+    addEndpoint('node-head', sourceEndpoint);
   }
 
   render() {
@@ -26,4 +25,8 @@ class Node extends Component {
   }
 }
 
-export default Node;
+Head.propTypes = {
+  addEndpoint: PropTypes.func.isRequired,
+  makeDraggable: PropTypes.func.isRequired,
+};
+export default Head;

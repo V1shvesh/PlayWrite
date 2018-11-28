@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './node.css';
-import { jsPlumb } from 'jsplumb';
 
 class Node extends Component {
   constructor(props) {
@@ -13,7 +12,7 @@ class Node extends Component {
   }
 
   componentDidMount() {
-    const { addr } = this.props;
+    const { addr, addEndpoint, makeDraggable } = this.props;
     const sourceEndpoint = {
       anchors: 'Right',
       endpoint: ['Dot', { radius: 8 }],
@@ -29,18 +28,16 @@ class Node extends Component {
       isSource: false,
       isTarget: true,
     };
-    jsPlumb.ready(() => {
-      jsPlumb.draggable(`node-${addr}`, { containment: 'parent' });
-      jsPlumb.addEndpoint(`node-${addr}`, sourceEndpoint);
-      jsPlumb.addEndpoint(`node-${addr}`, destEndpoint);
-    });
+    makeDraggable(`node-${addr.toString().padStart(2, '0')}`);
+    addEndpoint(`node-${addr.toString().padStart(2, '0')}`, sourceEndpoint);
+    addEndpoint(`node-${addr.toString().padStart(2, '0')}`, destEndpoint);
   }
 
   render() {
     const { left, top } = this.state;
     const { data, addr } = this.props;
     return (
-      <div className="node" id={`node-${addr}`} style={{ left, top }}>
+      <div className="node" id={`node-${addr.toString().padStart(2, '0')}`} style={{ left, top }}>
         <span className="node__data">{data}</span>
         <span className="node__addr">{`${addr.toString().padStart(2, '0')}`}</span>
       </div>
@@ -51,6 +48,8 @@ class Node extends Component {
 Node.propTypes = {
   data: PropTypes.number.isRequired,
   addr: PropTypes.number.isRequired,
+  addEndpoint: PropTypes.func.isRequired,
+  makeDraggable: PropTypes.func.isRequired,
 };
 
 export default Node;

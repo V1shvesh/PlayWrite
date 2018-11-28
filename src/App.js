@@ -11,14 +11,13 @@ const [PLAY, CODE] = [0, 1];
 
 /*
 TODO:
-  Add eventhandler to Run Button
   Add interpreter in eventHandler
 */
 
 function addrFromId(id) {
   let num;
   if (typeof id === 'string') {
-    if (id === 'node-head') return 'node-head';
+    if (id === 'node-head') return 'head';
     num = id.split('-').pop();
   } else { num = id; }
   return `${num.toString().padStart(2, '0')}`;
@@ -33,7 +32,7 @@ class App extends Component {
       curAddrInput: '',
       editorText: '',
       head: false,
-      mode: PLAY,
+      mode: CODE,
     };
     jsPlumb.ready(() => {
       jsPlumb.setContainer('App');
@@ -60,6 +59,14 @@ class App extends Component {
     });
   }
 
+  addEndpoint = (id, options) => {
+    jsPlumb.addEndpoint(id, options);
+  }
+
+  makeDraggable = (id) => {
+    jsPlumb.draggable(id, { containment: 'parent' });
+  }
+
   addHead = () => {
     const { editorText, mode } = this.state;
     this.setState({
@@ -71,13 +78,14 @@ class App extends Component {
         editorText: `${editorText}Created HEAD\n`,
       });
     }
+    return 'head';
   }
 
   removeHead = () => {
     const { head, mode, editorText } = this.state;
     if (head) {
-      const endpoint = jsPlumb.selectEndpoints({ source: 'node-head' });
-      endpoint.delete();
+      const endpoints = jsPlumb.selectEndpoints({ source: 'node-head' });
+      endpoints.delete();
       this.setState({ head: false });
       if (mode === PLAY) {
         this.setState({
@@ -96,7 +104,6 @@ class App extends Component {
     if (Number.isNaN(val)) {
       return -1;
     }
-
     let uid = 0;
     do {
       uid = Math.floor(Math.random() * 100);
@@ -141,16 +148,21 @@ class App extends Component {
   }
 
   linkNodes = (sourceUid, targetUid) => {
+    const sourceId = `node-${addrFromId(sourceUid)}`;
+    const targetId = `node-${addrFromId(targetUid)}`;
+    const sourceEndpoint = jsPlumb.selectEndpoints({ source: sourceId }).get(0);
+    const targetEndpoint = jsPlumb.selectEndpoints({ target: targetId }).get(0);
+    console.log(sourceEndpoint, targetEndpoint);
     jsPlumb.connect({
-      source: `node-${sourceUid}`,
-      target: `node-${targetUid}`,
+      source: sourceEndpoint,
+      target: targetEndpoint,
     });
   }
 
   unlinkNodes = (sourceUid, targetUid) => {
     jsPlumb.selectConnections({
-      source: `node-${sourceUid}`,
-      target: `node-${targetUid}`,
+      source: `node-${addrFromId(sourceUid)}`,
+      target: `node-${addrFromId(targetUid)}`,
     }).delete();
   }
 
@@ -185,7 +197,7 @@ class App extends Component {
   }
 
   resetPlayArea = () => {
-    jsPlumb.reset();
+    jsPlumb.selectEndpoints().delete();
     this.setState({
       nodes: [],
       curValueInput: NaN,
@@ -196,28 +208,61 @@ class App extends Component {
 
   changeMode = () => {
     const { mode } = this.state;
-    this.removeHead();
+    this.resetPlayArea();
     this.setState({
       mode: 1 - mode,
-      curValueInput: NaN,
       editorText: '',
     });
   }
 
   runCode = () => {
-    // Interpreter
+    //  !INTERPRETER!
+    this.resetPlayArea();
     const { editorText } = this.state;
     const varStore = {};
     const instructions = editorText.split('\n').filter(line => line.match(/\S+/)).map(line => line.trim().split(' '));
     let curIndex = 0;
+    let curTimeout = 0;
     try {
       while (curIndex < instructions.length) {
         const curLine = instructions[curIndex];
         if (curLine[1] === '=') {
           // Assignments
-          switch (curLine[0]) {
+          switch (curLine[2]) {
             case 'Node':
-              varStore[curLine[0]] = this.addNode(curLine[2]);
+              setTimeout(() => {
+                varStore[curLine[0]] = this.addNode(parseInt(curLine[3], 10));
+              }, curTimeout);
+              break;
+            case 'Head':
+              setTimeout(() => {
+                varStore[curLine[0]] = this.addHead();
+              }, curTimeout);
+              break;
+            default:
+              setTimeout(() => {
+                // Error if value undefined
+                varStore[curLine[0]] = varStore[curLine[1]];
+              }, curTimeout);
+              break;
+          }
+        } else {
+          // Functions
+          switch (curLine[0]) {
+            case 'Link':
+              setTimeout(() => {
+                this.linkNodes(varStore[curLine[1]], varStore[curLine[2]]);
+              }, curTimeout);
+              break;
+
+            case 'Remove':
+              setTimeout(() => {
+                if (varStore[curLine[1]] === 'head') {
+                  this.removeHead();
+                } else {
+                  this.removeNode(varStore[curLine[1]]);
+                }
+              }, curTimeout);
               break;
 
             default:
@@ -225,6 +270,7 @@ class App extends Component {
           }
         }
         curIndex += 1;
+        curTimeout += 1000;
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -241,12 +287,20 @@ class App extends Component {
       head,
       mode,
     } = this.state;
-    const nodeList = nodes.map(node => <Node key={node.uid} data={node.data} addr={node.uid} />);
+    const nodeList = nodes.map(node => (
+      <Node
+        key={node.uid}
+        data={node.data}
+        addr={node.uid}
+        addEndpoint={this.addEndpoint}
+        makeDraggable={this.makeDraggable}
+      />
+    ));
     return (
       <div id="App" className="App">
         {/* PlayArea */}
         <div id="play-area" className="play-grid">
-          {head ? <Head /> : ''}
+          {head ? <Head addEndpoint={this.addEndpoint} makeDraggable={this.makeDraggable} /> : ''}
           {nodeList}
         </div>
         {/* WriteArea */}

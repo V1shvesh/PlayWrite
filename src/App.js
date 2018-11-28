@@ -40,8 +40,10 @@ class App extends Component {
       jsPlumb.bind('beforeDrop', (e) => {
         const { editorText, mode } = this.state;
         if (mode === PLAY) {
+          const sourceUid = addrFromId(e.sourceId);
+          const targetUid = addrFromId(e.targetId);
           this.setState({
-            editorText: `${editorText}Linked node-${addrFromId(e.sourceId)} node-${addrFromId(e.targetId)}\n`,
+            editorText: `${editorText}Linked node-${sourceUid} node-${targetUid}\n`,
           });
         }
         return true;
@@ -85,28 +87,28 @@ class App extends Component {
     }
   }
 
-  addNode = () => {
+  addNode = (val) => {
     const {
       nodes,
-      curValueInput,
       editorText,
       mode,
     } = this.state;
-    if (Number.isNaN(curValueInput)) {
-      return;
+    if (Number.isNaN(val)) {
+      return -1;
     }
 
     let uid = 0;
     do {
       uid = Math.floor(Math.random() * 100);
-    } while (nodes.map(val => val.uid).includes(uid));
+    } while (nodes.map(node => node.uid).includes(uid));
 
     this.setState({
       nodes: [
         ...nodes,
         {
-          data: curValueInput,
+          data: val,
           uid,
+          next: null,
         },
       ],
     });
@@ -116,6 +118,7 @@ class App extends Component {
         editorText: `${editorText}Created node at ${addrFromId(uid)}\n`,
       });
     }
+    return uid;
   }
 
   removeNode = (uid) => {
@@ -137,13 +140,29 @@ class App extends Component {
     }
   }
 
+  linkNodes = (sourceUid, targetUid) => {
+    jsPlumb.connect({
+      source: `node-${sourceUid}`,
+      target: `node-${targetUid}`,
+    });
+  }
+
+  unlinkNodes = (sourceUid, targetUid) => {
+    jsPlumb.selectConnections({
+      source: `node-${sourceUid}`,
+      target: `node-${targetUid}`,
+    }).delete();
+  }
+
   handleValueInput = (e) => {
     const { valueAsNumber } = e.target;
     let a = valueAsNumber;
+    if (Number.isNaN(a)) {
+      a = NaN;
+    }
     if (a >= 1000) {
       a = 999;
-    }
-    if (a < 0) {
+    } else if (a < 0) {
       a = 0;
     }
     this.setState({
@@ -173,6 +192,14 @@ class App extends Component {
       curValueInput: NaN,
       editorText: '',
     });
+  }
+
+  runCode = () => {
+    // Interpreter
+    const { editorText } = this.state;
+    const instructions = editorText.split('\n').map(line => line.trim()).filter(line => line.match(/\S+/));
+
+    console.log(instructions);
   }
 
   render() {
@@ -223,13 +250,13 @@ class App extends Component {
                 type="number"
                 min="0"
                 max="999"
-                value={curValueInput}
-                onInput={this.handleValueInput}
+                value={Number.isNaN(curValueInput) ? '' : curValueInput}
+                onChange={this.handleValueInput}
               />
               <button
                 className="btn btn-create-node"
                 type="button"
-                onClick={this.addNode}
+                onClick={() => this.addNode(curValueInput)}
               >
                 Create Node
               </button>
@@ -247,7 +274,7 @@ class App extends Component {
                 min="0"
                 max="99"
                 value={curAddrInput}
-                onInput={this.handleAddrInput}
+                onChange={this.handleAddrInput}
               />
               <button
                 className="btn btn-create-node"
@@ -262,7 +289,7 @@ class App extends Component {
               <button
                 className="btn btn-run-code"
                 type="button"
-                onClick={this.addNode}
+                onClick={this.runCode}
               >
                 Run
               </button>

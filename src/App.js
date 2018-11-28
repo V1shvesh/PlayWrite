@@ -102,16 +102,16 @@ class App extends Component {
       uid = Math.floor(Math.random() * 100);
     } while (nodes.map(node => node.uid).includes(uid));
 
-    this.setState({
+    this.setState(state => ({
       nodes: [
-        ...nodes,
+        ...state.nodes,
         {
           data: val,
           uid,
           next: null,
         },
       ],
-    });
+    }));
 
     if (mode === PLAY) {
       this.setState({
@@ -197,9 +197,29 @@ class App extends Component {
   runCode = () => {
     // Interpreter
     const { editorText } = this.state;
-    const instructions = editorText.split('\n').map(line => line.trim()).filter(line => line.match(/\S+/));
+    const varStore = {};
+    const instructions = editorText.split('\n').filter(line => line.match(/\S+/)).map(line => line.trim().split(' '));
+    let curIndex = 0;
+    try {
+      while (curIndex < instructions.length) {
+        const curLine = instructions[curIndex];
+        if (curLine[1] === '=') {
+          // Assignments
+          switch (curLine[0]) {
+            case 'Node':
+              varStore[curLine[0]] = this.addNode(curLine[2]);
+              break;
 
-    console.log(instructions);
+            default:
+              break;
+          }
+        }
+        curIndex += 1;
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
   }
 
   render() {
